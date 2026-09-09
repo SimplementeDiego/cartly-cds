@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum CheckoutStatus {
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+}
+
+model User {
+  id           String            @id @default(uuid()) @db.Uuid
+  email        String            @unique @db.VarChar(320)
+  displayName  String?           @map("display_name") @db.VarChar(100)
+  phone        String?           @db.VarChar(30)
+  address      String?           @db.VarChar(250)
+  city         String?           @db.VarChar(100)
+  country      String?           @db.VarChar(100)
+  passwordHash String            @map("password_hash")
+  role         Role              @default(CUSTOMER)
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  cart         Cart?
+  orders       Order[]
+  checkouts    CheckoutSession[]
+
+  @@map("users")
+}
+
+model Category {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique @db.VarChar(100)
+  slug     String    @unique @db.VarChar(100)
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String         @db.VarChar(160)
+  searchName    String         @map("search_name") @db.VarChar(320)
+  description   String
+  priceCents    Int            @map("price_cents")
+  isActive      Boolean        @default(true) @map("is_active")
+  imageKey      String?        @map("image_key") @db.VarChar(500)
+  categoryId    String         @default("20000000-0000-4000-8000-000000000001") @map("category_id") @db.Uuid
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
+  cartItems     CartItem[]
+  checkoutItems CheckoutItem[]
+
+  @@index([isActive, name])
+  @@index([deletedAt, isActive])
+  @@index([searchName(ops: raw("gin_trgm_ops"))], map: "products_search_name_trgm_idx", type: Gin)
+  @@index([categoryId, isActive])
+  @@map("products")
+}
+
+model Cart {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @unique @map("user_id") @db.Uuid
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  cartId    String  @map("cart_id") @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  quantity  Int
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, productId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model CheckoutSession {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @map("user_id") @db.Uuid
+  stripeSessionId String?         @unique @map("stripe_session_id") @db.VarChar(255)
+  currency        String          @db.VarChar(3)
+  totalCents      Int             @map("total_cents")
+  status          CheckoutStatus  @default(PENDING)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  paidAt          DateTime?       @map("paid_at")
+  user            User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items           CheckoutItem[]
+  order           Order?
+
+  @@index([userId, createdAt])
+  @@map("checkout_sessions")
+}
+
+model CheckoutItem {
+  id                String          @id @default(uuid()) @db.Uuid
+  checkoutSessionId String          @map("checkout_session_id") @db.Uuid
+  productId         String          @map("product_id") @db.Uuid
+  productName       String          @map("product_name") @db.VarChar(160)
+  quantity          Int
+  unitPriceCents    Int             @map("unit_price_cents")
+  totalCents        Int             @map("total_cents")
+  checkoutSession   CheckoutSession @relation(fields: [checkoutSessionId], references: [id], onDelete: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([checkoutSessionId])
+  @@map("checkout_items")
+}
+
+model Order {
+  id                      String          @id @default(uuid()) @db.Uuid
+  userId                  String          @map("user_id") @db.Uuid
+  checkoutSessionId       String          @unique @map("checkout_session_id") @db.Uuid
+  stripeCheckoutSessionId String          @unique @map("stripe_checkout_session_id") @db.VarChar(255)
+  currency                String          @db.VarChar(3)
+  totalCents              Int             @map("total_cents")
+  createdAt               DateTime        @default(now()) @map("created_at")
+  user                    User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  checkoutSession         CheckoutSession @relation(fields: [checkoutSessionId], references: [id], onDelete: Restrict)
+  items                   OrderItem[]
+
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String @id @default(uuid()) @db.Uuid
+  orderId        String @map("order_id") @db.Uuid
+  productId      String @map("product_id") @db.Uuid
+  productName    String @map("product_name") @db.VarChar(160)
+  quantity       Int
+  unitPriceCents Int    @map("unit_price_cents")
+  totalCents     Int    @map("total_cents")
+  rating         Int?   @db.SmallInt
+  order          Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model WebhookEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  stripeEventId String   @unique @map("stripe_event_id") @db.VarChar(255)
+  type          String   @db.VarChar(100)
+  processedAt   DateTime @default(now()) @map("processed_at")
+
+  @@map("webhook_events")
+}

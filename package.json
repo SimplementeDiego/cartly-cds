@@ -1,0 +1,35 @@
+{
+  "name": "cartly",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cartly modular monolith e-commerce technical assessment",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "e2e"
+  ],
+  "scripts": {
+    "compose:up": "docker compose up --build",
+    "compose:down": "docker compose down",
+    "compose:clean": "docker compose down --volumes",
+    "compose:logs": "docker compose logs --follow",
+    "dev:backend": "npm run start:dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "lint": "npm run lint --workspace backend && npm run lint --workspace frontend",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm test --workspace backend",
+    "test:frontend": "npm test --workspace frontend",
+    "test:e2e": "npm test --workspace e2e",
+    "test:e2e:headed": "npm run test:headed --workspace e2e",
+    "test:e2e:ui": "npm run test:ui --workspace e2e",
+    "e2e:install": "npm run install:browsers --workspace e2e",
+    "db:migrate": "docker compose exec backend npx prisma migrate deploy",
+    "db:seed": "docker compose exec backend npm run prisma:seed",
+    "db:migrate:host": "npm run prisma:deploy --workspace backend",
+    "db:seed:host": "npm run prisma:seed --workspace backend"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

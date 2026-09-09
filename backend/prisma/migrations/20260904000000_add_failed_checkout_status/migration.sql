@@ -1,0 +1,1 @@
+ALTER TYPE "CheckoutStatus" ADD VALUE 'FAILED';
