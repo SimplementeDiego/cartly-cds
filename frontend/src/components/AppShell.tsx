@@ -322,7 +322,7 @@ export function AppShell() {
         <Outlet />
       </Box>
       <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-        <Container maxWidth="lg" sx={{ py: { xs: 3, sm: 4 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: .5, sm: 2 }, justifyContent: 'space-between', alignItems: { sm: 'center' } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 1.5, sm: 4 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: .5, sm: 2 }, justifyContent: 'space-between', alignItems: { sm: 'center' } }}>
           <Typography fontWeight={800}>Cartly</Typography>
           <Typography variant="body2" color="text.secondary">Compras simples, precios claros.</Typography>
         </Container>

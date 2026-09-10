@@ -21,6 +21,32 @@ async function expectHeaderPinned(page: Page) {
     .toBe(0);
 }
 
+async function readStableLayout(page: Page) {
+  return page.evaluate(() => {
+    const readRect = (selector: string) => {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`No se encontró ${selector}`);
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, width: rect.width };
+    };
+
+    return {
+      headerContent: readRect('header .MuiContainer-root'),
+      pageContent: readRect('main .MuiContainer-root'),
+    };
+  });
+}
+
+function expectLayoutUnchanged(
+  before: Awaited<ReturnType<typeof readStableLayout>>,
+  after: Awaited<ReturnType<typeof readStableLayout>>,
+) {
+  expect(Math.abs(after.headerContent.left - before.headerContent.left)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.headerContent.width - before.headerContent.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.pageContent.left - before.pageContent.left)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.pageContent.width - before.pageContent.width)).toBeLessThanOrEqual(1);
+}
+
 async function verifyAdminOverlaysKeepHeaderPinned(page: Page) {
   await login(page, adminEmail, adminPassword);
   await page.goto('/admin/products');
@@ -30,20 +56,24 @@ async function verifyAdminOverlaysKeepHeaderPinned(page: Page) {
   await deleteButton.scrollIntoViewIfNeeded();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await expectHeaderPinned(page);
+  const beforeDelete = await readStableLayout(page);
 
   await deleteButton.click();
   const deleteDialog = page.getByRole('dialog', { name: 'Eliminar producto' });
   await expect(deleteDialog).toBeVisible();
   await expectHeaderPinned(page);
+  expectLayoutUnchanged(beforeDelete, await readStableLayout(page));
   await deleteDialog.getByRole('button', { name: 'Cancelar' }).click();
   await expect(deleteDialog).toBeHidden();
 
   const editButton = page.locator('button[aria-label^="Editar "]').last();
   await editButton.scrollIntoViewIfNeeded();
+  const beforeEdit = await readStableLayout(page);
   await editButton.click();
   const editDialog = page.getByRole('dialog', { name: 'Editar producto' });
   await expect(editDialog).toBeVisible();
   await expectHeaderPinned(page);
+  expectLayoutUnchanged(beforeEdit, await readStableLayout(page));
   await editDialog.getByRole('button', { name: 'Cancelar' }).click();
 }
 

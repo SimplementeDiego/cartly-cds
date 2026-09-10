@@ -47,6 +47,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 8999,
     categoryId: categoryId(2),
     isActive: true,
+    seedImageFile: 'auriculares-inalambricos.jpg',
   },
   {
     id: productId(2),
@@ -55,6 +56,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 10990,
     categoryId: categoryId(2),
     isActive: true,
+    seedImageFile: 'teclado-mecanico-compacto.jpg',
   },
   {
     id: productId(3),
@@ -63,6 +65,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 4590,
     categoryId: categoryId(6),
     isActive: true,
+    seedImageFile: 'soporte-aluminio.jpg',
   },
   {
     id: productId(4),
@@ -71,15 +74,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 1999,
     categoryId: GENERAL_CATEGORY_ID,
     isActive: false,
-  },
-  {
-    id: 'b15f41dc-14f6-4459-b9c2-0c995839c9e2',
-    name: 'Una maqueta',
-    description: 'Una maqueta',
-    priceCents: 10000,
-    categoryId: GENERAL_CATEGORY_ID,
-    isActive: true,
-    seedImageFile: 'una-maqueta.png',
+    seedImageFile: 'producto-archivado.jpg',
   },
   {
     id: productId(5),
@@ -88,6 +83,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 5990,
     categoryId: categoryId(2),
     isActive: true,
+    seedImageFile: 'parlante-portatil-bluetooth.jpg',
   },
   {
     id: productId(6),
@@ -96,6 +92,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3490,
     categoryId: categoryId(2),
     isActive: true,
+    seedImageFile: 'bateria-portatil-usb-c.jpg',
   },
   {
     id: productId(7),
@@ -104,6 +101,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 4290,
     categoryId: categoryId(3),
     isActive: true,
+    seedImageFile: 'manta-algodon-tejida.jpg',
   },
   {
     id: productId(8),
@@ -112,6 +110,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2490,
     categoryId: categoryId(3),
     isActive: true,
+    seedImageFile: 'almohadon-lino.jpg',
   },
   {
     id: productId(9),
@@ -120,6 +119,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2890,
     categoryId: categoryId(3),
     isActive: true,
+    seedImageFile: 'florero-ceramica.jpg',
   },
   {
     id: productId(10),
@@ -128,6 +128,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3290,
     categoryId: categoryId(3),
     isActive: true,
+    seedImageFile: 'canasto-organizador.jpg',
   },
   {
     id: productId(11),
@@ -136,6 +137,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 6490,
     categoryId: categoryId(4),
     isActive: true,
+    seedImageFile: 'mochila-urbana.jpg',
   },
   {
     id: productId(12),
@@ -144,6 +146,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2790,
     categoryId: categoryId(4),
     isActive: true,
+    seedImageFile: 'billetera-compacta.jpg',
   },
   {
     id: productId(13),
@@ -152,6 +155,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3990,
     categoryId: categoryId(4),
     isActive: true,
+    seedImageFile: 'lentes-sol-clasicos.jpg',
   },
   {
     id: productId(14),
@@ -160,6 +164,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 1890,
     categoryId: categoryId(4),
     isActive: true,
+    seedImageFile: 'gorra-algodon.jpg',
   },
   {
     id: productId(15),
@@ -168,6 +173,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3690,
     categoryId: categoryId(5),
     isActive: true,
+    seedImageFile: 'mat-yoga-antideslizante.jpg',
   },
   {
     id: productId(16),
@@ -176,6 +182,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2990,
     categoryId: categoryId(5),
     isActive: true,
+    seedImageFile: 'botella-termica-acero.jpg',
   },
   {
     id: productId(17),
@@ -184,6 +191,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2290,
     categoryId: categoryId(5),
     isActive: true,
+    seedImageFile: 'set-bandas-resistencia.jpg',
   },
   {
     id: productId(18),
@@ -192,6 +200,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 7990,
     categoryId: categoryId(5),
     isActive: true,
+    seedImageFile: 'mochila-senderismo.jpg',
   },
   {
     id: productId(19),
@@ -200,6 +209,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 1590,
     categoryId: categoryId(6),
     isActive: true,
+    seedImageFile: 'cuaderno-tapa-dura.jpg',
   },
   {
     id: productId(20),
@@ -208,6 +218,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2690,
     categoryId: categoryId(6),
     isActive: true,
+    seedImageFile: 'organizador-escritorio.jpg',
   },
   {
     id: productId(21),
@@ -216,6 +227,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 4990,
     categoryId: categoryId(6),
     isActive: true,
+    seedImageFile: 'lampara-escritorio-led.jpg',
   },
   {
     id: productId(22),
@@ -224,6 +236,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 4490,
     categoryId: categoryId(7),
     isActive: true,
+    seedImageFile: 'sarten-antiadherente.jpg',
   },
   {
     id: productId(23),
@@ -232,6 +245,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3890,
     categoryId: categoryId(7),
     isActive: true,
+    seedImageFile: 'cuchillo-chef.jpg',
   },
   {
     id: productId(24),
@@ -240,6 +254,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 3290,
     categoryId: categoryId(7),
     isActive: true,
+    seedImageFile: 'cafetera-prensa-francesa.jpg',
   },
   {
     id: productId(25),
@@ -248,6 +263,7 @@ const catalogProductDefinitions: CatalogProductDefinition[] = [
     priceCents: 2790,
     categoryId: categoryId(7),
     isActive: true,
+    seedImageFile: 'set-tablas-bambu.jpg',
   },
 ];
 

@@ -27,7 +27,7 @@
     "db:migrate": "docker compose exec backend npx prisma migrate deploy",
     "db:seed": "docker compose exec backend npm run prisma:seed",
     "db:migrate:host": "npm run prisma:deploy --workspace backend",
-    "db:seed:host": "npm run prisma:seed --workspace backend"
+    "db:seed:host": "npm run prisma:seed:host --workspace backend"
   },
   "engines": {
     "node": ">=22"
