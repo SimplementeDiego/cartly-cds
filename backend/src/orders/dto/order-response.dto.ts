@@ -1,22 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderItemResponseDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   productId!: string;
 
-  @ApiProperty({ example: 'Auriculares inalámbricos' })
+  @ApiProperty({ type: String, example: 'Auriculares inalámbricos' })
   productName!: string;
 
-  @ApiProperty({ minimum: 1, maximum: 99 })
+  @ApiProperty({ type: 'integer', minimum: 1, maximum: 99 })
   quantity!: number;
 
-  @ApiProperty({ description: 'Unit price in the currency minimum unit', example: 2599 })
+  @ApiProperty({ type: 'integer', description: 'Unit price in the currency minimum unit', example: 2599 })
   unitPriceCents!: number;
 
-  @ApiProperty({ description: 'Line total in the currency minimum unit', example: 5198 })
+  @ApiProperty({ type: 'integer', description: 'Line total in the currency minimum unit', example: 5198 })
   totalCents!: number;
 
   @ApiProperty({
@@ -31,16 +31,16 @@ export class OrderItemResponseDto {
 }
 
 export class OrderResponseDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ enum: ['PAID'], example: 'PAID' })
+  @ApiProperty({ type: String, enum: ['PAID'], example: 'PAID' })
   status!: 'PAID';
 
-  @ApiProperty({ minLength: 3, maxLength: 3, example: 'usd' })
+  @ApiProperty({ type: String, minLength: 3, maxLength: 3, example: 'usd' })
   currency!: string;
 
-  @ApiProperty({ description: 'Order total in the currency minimum unit', example: 5198 })
+  @ApiProperty({ type: 'integer', description: 'Order total in the currency minimum unit', example: 5198 })
   totalCents!: number;
 
   @ApiProperty({ type: String, format: 'date-time' })

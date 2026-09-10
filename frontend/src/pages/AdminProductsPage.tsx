@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -39,6 +39,7 @@ import { PageHeader } from '../components/PageHeader';
 import { ProductImage } from '../components/ProductImage';
 import { SalesOverviewPanel } from '../components/SalesOverviewPanel';
 import { useFeedback } from '../components/FeedbackProvider';
+import { saveProductWithImage, type ProductSaveSession } from './adminProductSave';
 
 const productSchema = z.object({
   name: z.string().trim().min(2, 'Ingresá un nombre de al menos 2 caracteres.').max(120, 'El nombre no puede superar 120 caracteres.'),
@@ -58,23 +59,12 @@ function ProductDialog({ product, open, onClose }: { product: Product | null; op
   const { notify } = useFeedback();
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState('');
+  const saveSession = useRef<ProductSaveSession>({ createdProductId: null, progress: 'none' });
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: api.products.categories, enabled: open });
   const form = useForm<ProductFormFields>({
     resolver: zodResolver(productSchema),
     defaultValues: { name: '', description: '', price: '', categoryId: generalCategoryId, isActive: true },
   });
-
-  useEffect(() => {
-    form.reset(product ? {
-      name: product.name,
-      description: product.description,
-      price: (product.priceCents / 100).toFixed(2),
-      categoryId: product.categoryId,
-      isActive: product.isActive,
-    } : { name: '', description: '', price: '', categoryId: generalCategoryId, isActive: true });
-    setFile(null);
-    setFileError('');
-  }, [form, product, open]);
 
   const saveProduct = useMutation({
     mutationFn: async (values: ProductFormFields) => {
@@ -85,19 +75,43 @@ function ProductDialog({ product, open, onClose }: { product: Product | null; op
         categoryId: values.categoryId,
         isActive: values.isActive,
       };
-      const saved = product
-        ? await api.admin.updateProduct(product.id, input)
-        : await api.admin.createProduct(input);
-      return file ? api.admin.uploadImage(saved.id, file) : saved;
+      return saveProductWithImage(api.admin, saveSession.current, {
+        existingProductId: product?.id ?? null,
+        input,
+        file,
+      });
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      if (product) queryClient.invalidateQueries({ queryKey: ['product', product.id] });
+      queryClient.invalidateQueries({ queryKey: ['product', saved.id] });
       notify(product ? 'Producto actualizado.' : 'Producto creado.');
       onClose();
     },
+    onError: () => {
+      const persistedProductId = product?.id ?? saveSession.current.createdProductId;
+      if (persistedProductId && saveSession.current.progress !== 'none') {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['product', persistedProductId] });
+      }
+    },
   });
+  const resetSaveProduct = saveProduct.reset;
+
+  useEffect(() => {
+    form.reset(product ? {
+      name: product.name,
+      description: product.description,
+      price: (product.priceCents / 100).toFixed(2),
+      categoryId: product.categoryId,
+      isActive: product.isActive,
+    } : { name: '', description: '', price: '', categoryId: generalCategoryId, isActive: true });
+    saveSession.current = { createdProductId: null, progress: 'none' };
+    resetSaveProduct();
+    setFile(null);
+    setFileError('');
+  }, [form, product, open, resetSaveProduct]);
 
   const chooseFile = (selected?: File) => {
     setFileError('');
@@ -145,7 +159,15 @@ function ProductDialog({ product, open, onClose }: { product: Product | null; op
         </DialogTitle>
         <DialogContent dividers sx={{ minHeight: 0, px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
           <Stack spacing={{ xs: 2, sm: 2.3 }}>
-            {saveProduct.isError && <Alert severity="error">{getErrorMessage(saveProduct.error, 'No pudimos guardar el producto.')}</Alert>}
+            {saveProduct.isError && (
+              <Alert severity="error">
+                {saveSession.current.progress === 'image'
+                  ? `${getErrorMessage(saveProduct.error, 'No pudimos completar la publicación.')} Los datos y la imagen ya quedaron guardados; reintentá para finalizar.`
+                  : saveSession.current.progress === 'product'
+                    ? `${getErrorMessage(saveProduct.error, 'No pudimos subir la imagen.')} Los datos ya quedaron guardados; reintentá para completar la carga.`
+                    : getErrorMessage(saveProduct.error, 'No pudimos guardar el producto.')}
+              </Alert>
+            )}
             <TextField autoFocus fullWidth label="Nombre" error={Boolean(form.formState.errors.name)} helperText={form.formState.errors.name?.message} {...form.register('name')} />
             <TextField fullWidth label="Descripción" multiline minRows={4} error={Boolean(form.formState.errors.description)} helperText={form.formState.errors.description?.message} {...form.register('description')} />
             <Controller
@@ -228,7 +250,13 @@ function ProductDialog({ product, open, onClose }: { product: Product | null; op
             startIcon={saveProduct.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' }, whiteSpace: 'nowrap' }}
           >
-            {saveProduct.isPending ? 'Guardando…' : product ? 'Guardar cambios' : 'Crear producto'}
+            {saveProduct.isPending
+              ? 'Guardando…'
+              : product
+                ? 'Guardar cambios'
+                : saveSession.current.createdProductId && file
+                  ? 'Reintentar imagen'
+                  : 'Crear producto'}
           </Button>
         </DialogActions>
       </Box>

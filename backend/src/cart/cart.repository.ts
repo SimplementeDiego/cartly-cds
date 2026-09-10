@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 export const cartInclude = {
@@ -25,6 +26,21 @@ export class CartRepository {
     return this.prisma.cartItem.findUnique({
       where: { cartId_productId: { cartId, productId } },
     });
+  }
+
+  async addItem(cartId: string, productId: string, quantity: number) {
+    const incremented = await this.prisma.$queryRaw<Array<{ quantity: number }>>`
+      INSERT INTO cart_items (id, cart_id, product_id, quantity)
+      VALUES (${randomUUID()}::uuid, ${cartId}::uuid, ${productId}::uuid, ${quantity})
+      ON CONFLICT (cart_id, product_id) DO UPDATE
+      SET quantity = cart_items.quantity + EXCLUDED.quantity
+      WHERE cart_items.quantity + EXCLUDED.quantity <= 99
+      RETURNING quantity
+    `;
+
+    if (incremented.length === 0) return null;
+
+    return this.prisma.cart.findUniqueOrThrow({ where: { id: cartId }, include: cartInclude });
   }
 
   async setItem(cartId: string, productId: string, quantity: number) {

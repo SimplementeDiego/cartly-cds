@@ -2,13 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 
 export class UserProfileDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ example: 'customer@example.com' })
+  @ApiProperty({ type: String, format: 'email', example: 'customer@example.com' })
   email!: string;
 
-  @ApiProperty({ enum: Role })
+  @ApiProperty({ type: String, enum: Role })
   role!: Role;
 
   @ApiProperty({ type: String, nullable: true })

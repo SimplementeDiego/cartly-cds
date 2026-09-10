@@ -22,12 +22,11 @@ export class CartService {
   async add(userId: string, dto: AddCartItemDto) {
     await this.requireActiveProduct(dto.productId);
     const cart = await this.cartRepository.ensureCart(userId);
-    const current = await this.cartRepository.findItem(cart.id, dto.productId);
-    const nextQuantity = (current?.quantity ?? 0) + dto.quantity;
-    if (nextQuantity > 99) {
+    const updatedCart = await this.cartRepository.addItem(cart.id, dto.productId, dto.quantity);
+    if (!updatedCart) {
       throw new BadRequestException('A cart item cannot exceed 99 units');
     }
-    return this.present(await this.cartRepository.setItem(cart.id, dto.productId, nextQuantity));
+    return this.present(updatedCart);
   }
 
   async update(userId: string, productId: string, dto: UpdateCartItemDto) {

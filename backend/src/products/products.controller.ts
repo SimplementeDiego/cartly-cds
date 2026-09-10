@@ -7,10 +7,23 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
+import { apiErrorResponse } from '../common/decorators/api-session-auth.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { ProductQueryDto } from './dto/product-query.dto';
+import {
+  CategoryResponseDto,
+  ProductResponseDto,
+  ProductSelectionResponseDto,
+} from './dto/product-response.dto';
 import { ProductsService } from './products.service';
 
 @ApiTags('products')
@@ -21,6 +34,8 @@ export class ProductsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List active products' })
+  @ApiOkResponse({ type: ProductResponseDto, isArray: true })
+  @ApiBadRequestResponse(apiErrorResponse('The catalogue filters failed validation'))
   list(@Query() query: ProductQueryDto) {
     return this.productsService.listPublic(
       query.search,
@@ -33,6 +48,7 @@ export class ProductsController {
   @Public()
   @Get('categories')
   @ApiOperation({ summary: 'List available product categories' })
+  @ApiOkResponse({ type: CategoryResponseDto, isArray: true })
   categories() {
     return this.productsService.listCategories();
   }
@@ -46,14 +62,7 @@ export class ProductsController {
   })
   @ApiOkResponse({
     description: 'Five products when the active catalogue contains at least five entries',
-    schema: {
-      type: 'object',
-      required: ['selection', 'products'],
-      properties: {
-        selection: { type: 'string', enum: ['best-sellers', 'featured'] },
-        products: { type: 'array', maxItems: 5, items: { type: 'object' } },
-      },
-    },
+    type: ProductSelectionResponseDto,
   })
   bestSellers() {
     return this.productsService.listBestSellers();
@@ -62,6 +71,17 @@ export class ProductsController {
   @Public()
   @Get(':id/image')
   @ApiOperation({ summary: 'Stream a product image from private object storage' })
+  @ApiParam({ name: 'id', format: 'uuid', description: 'Product identifier' })
+  @ApiOkResponse({
+    description: 'JPEG, PNG, or WebP image bytes',
+    content: {
+      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+      'image/png': { schema: { type: 'string', format: 'binary' } },
+      'image/webp': { schema: { type: 'string', format: 'binary' } },
+    },
+  })
+  @ApiBadRequestResponse(apiErrorResponse('The product ID is not a UUID'))
+  @ApiNotFoundResponse(apiErrorResponse('The active product or its image was not found'))
   async image(@Param('id', ParseUUIDPipe) id: string, @Res() response: Response) {
     const image = await this.productsService.getPublicImage(id);
     if (!image.body || typeof image.body.pipe !== 'function') {
@@ -69,7 +89,8 @@ export class ProductsController {
     }
     response.setHeader('Content-Type', image.contentType);
     response.setHeader('Cache-Control', 'public, max-age=3600');
-    if (image.contentLength !== undefined) response.setHeader('Content-Length', image.contentLength);
+    if (image.contentLength !== undefined)
+      response.setHeader('Content-Length', image.contentLength);
     if (image.etag) response.setHeader('ETag', image.etag);
     image.body.pipe(response);
   }
@@ -77,6 +98,10 @@ export class ProductsController {
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get an active product' })
+  @ApiParam({ name: 'id', format: 'uuid', description: 'Product identifier' })
+  @ApiOkResponse({ type: ProductResponseDto })
+  @ApiBadRequestResponse(apiErrorResponse('The product ID is not a UUID'))
+  @ApiNotFoundResponse(apiErrorResponse('The active product was not found'))
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.getPublic(id);
   }
